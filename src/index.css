@@ -28,9 +28,13 @@
   }
 
   body {
-    background-color: var(--background);
+    background-color: var(--surface);
     color: var(--foreground);
-    @apply font-sans antialiased selection:bg-pl-brand selection:text-white transition-colors duration-300;
+    @apply font-sans antialiased selection:bg-pl-brand selection:text-white transition-colors duration-300 flex justify-center min-h-[100dvh];
+  }
+
+  #root {
+    @apply w-full max-w-[480px] min-h-[100dvh] relative overflow-x-hidden bg-[var(--background)] shadow-2xl shadow-black/20 border-x-[3px] border-foreground;
   }
 }
 

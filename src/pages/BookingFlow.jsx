@@ -119,7 +119,7 @@ export default function BookingFlow() {
   return (
     <div className="flex flex-col min-h-screen bg-background pb-28 font-sans">
       {/* Header */}
-      <header className="fixed top-0 left-0 w-full z-50 bg-background border-b-[3px] border-foreground px-4 py-4 flex items-center justify-between">
+      <header className="fixed top-0 w-full max-w-[480px] z-50 bg-background border-b-[3px] border-foreground px-4 py-4 flex items-center justify-between">
         <button onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)} className="p-2 border-2 border-foreground rounded-full hover:bg-foreground hover:text-background transition-colors">
           <ChevronLeft size={24} strokeWidth={3} />
         </button>
@@ -230,7 +230,7 @@ export default function BookingFlow() {
               </div>
 
               {selectedSlot && (
-                <div className="fixed bottom-0 left-0 w-full px-4 py-4 bg-background border-t-[3px] border-foreground z-40 flex gap-4">
+                <div className="fixed bottom-0 w-full max-w-[480px] px-4 py-4 bg-background border-t-[3px] border-foreground z-40 flex gap-4">
                   <div className="flex-1">
                     <span className="font-sans font-bold text-[10px] tracking-widest uppercase">TOTAL</span>
                     <div className="font-heavy text-3xl leading-none">₹{calculatePrice(currentBasePrice, selectedSlot.start_time)}</div>

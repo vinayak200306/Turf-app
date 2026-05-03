@@ -95,7 +95,7 @@ export default function SportsListing() {
       )}
 
       {/* Sticky Call to Action */}
-      <div className="fixed bottom-24 left-0 w-full px-4 z-40">
+      <div className="fixed bottom-24 w-full max-w-[480px] px-4 z-40">
         <Link to="/booking/football">
           <button className="w-full bg-pl-brand text-white font-display text-2xl tracking-wider uppercase py-4 border-[3px] border-foreground shadow-pl-solid active:translate-y-1 active:shadow-none transition-all">
             CHOOSE THE ARENA

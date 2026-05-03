@@ -19,7 +19,7 @@ export default function MobileLayout({ children }) {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground scroll-smooth font-sans">
       {/* App Header */}
-      <header className="fixed top-0 left-0 w-full z-50 bg-background border-b-[3px] border-foreground px-6 py-4 flex items-center justify-between">
+      <header className="fixed top-0 w-full max-w-[480px] z-50 bg-background border-b-[3px] border-foreground px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center">
             <Trophy size={20} className="text-background" strokeWidth={3} />
@@ -56,8 +56,8 @@ export default function MobileLayout({ children }) {
       </main>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 w-full flex justify-center z-50 bg-background border-t-[3px] border-foreground px-2 py-2">
-        <nav className="flex justify-between items-center w-full max-w-md px-2">
+      <div className="fixed bottom-0 w-full max-w-[480px] flex justify-center z-50 bg-background border-t-[3px] border-foreground px-2 py-2">
+        <nav className="flex justify-between items-center w-full px-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
