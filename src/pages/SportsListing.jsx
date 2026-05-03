@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { ShieldCheck, ArrowRight, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function SportsListing() {
@@ -29,77 +28,81 @@ export default function SportsListing() {
 
   const list = sports.length > 0 ? sports : fallbackSports;
 
+  const bgColors = [
+    'bg-pl-pink',
+    'bg-pl-blue',
+    'bg-pl-green',
+    'bg-pl-yellow',
+  ];
+
   return (
-    <div className="flex flex-col gap-6 p-4 pb-28">
-      <header className="space-y-1">
-        <h2 className="font-display font-bold text-3xl text-slate-900 dark:text-white">Choose Your Arena</h2>
-        <p className="text-slate-500 font-medium text-sm">Professional grade turfs and activities.</p>
+    <div className="flex flex-col gap-2 p-2 pb-28 font-sans bg-background min-h-screen">
+      <header className="px-4 py-6 border-b-[3px] border-foreground mb-4">
+        <h2 className="font-heavy text-5xl text-foreground uppercase tracking-wide leading-none">THE BEST</h2>
+        <h2 className="font-heavy text-5xl text-foreground uppercase tracking-wide leading-none">ARENA</h2>
+        <h2 className="font-heavy text-5xl text-white text-stroke uppercase tracking-wide leading-none">MATCH</h2>
       </header>
 
       {loading && sports.length === 0 ? (
-          <div className="py-20 text-center text-brand-500 font-bold animate-pulse">Loading Arenas...</div>
+          <div className="py-20 text-center text-foreground font-display text-2xl uppercase animate-pulse">Loading Arenas...</div>
       ) : (
-          <div className="flex flex-col gap-6">
-              {list.map((sport, index) => (
+          <div className="flex flex-col gap-0 rounded-[2.5rem] overflow-hidden border-[3px] border-foreground shadow-pl-solid mx-2">
+              {list.map((sport, index) => {
+                const colorClass = bgColors[index % bgColors.length];
+                
+                return (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
                     key={sport.id}
                   >
                     <Link 
                       to={`/booking/${sport.id}`} 
                       state={{ sport }}
-                      className="group block relative h-64 rounded-[2rem] overflow-hidden shadow-glass dark:shadow-glass-dark"
+                      className={`group block relative p-6 border-b-[3px] border-foreground last:border-b-0 ${colorClass} hover:opacity-90 transition-opacity`}
                     >
-                        <img 
-                          src={sport.image || sport.image_url} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                          alt={sport.name} 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent z-10" />
-                        
-                        <div className="absolute top-4 left-4 z-20 flex gap-2">
-                            <span className="bg-emerald-500/90 text-white font-bold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm shadow-sm">
-                              Available
-                            </span>
-                            {(sport.price_per_hour || sport.price) > 1000 && (
-                                <span className="glass border-none text-white font-bold text-[10px] px-3 py-1 rounded-full uppercase flex items-center gap-1 shadow-sm">
-                                    <ShieldCheck size={12} className="text-brand-400" /> PRO
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between">
-                            <div className="space-y-1">
-                                <h4 className="font-display font-bold text-2xl text-white leading-none">
+                        <div className="flex items-center justify-between z-20 relative">
+                            <div className="flex-1">
+                                <span className="font-sans font-bold text-xs uppercase tracking-widest text-foreground/70 mb-1 block">Starts From</span>
+                                <h4 className="font-heavy text-4xl text-foreground leading-none tracking-wide">
+                                    ₹{sport.price_per_hour || sport.price}
+                                </h4>
+                            </div>
+                            
+                            <div className="flex-1 text-center px-2">
+                                <h4 className="font-display text-3xl font-bold text-foreground uppercase leading-none tracking-wide">
                                     {sport.name}
                                 </h4>
-                                <div className="flex items-center gap-3 text-white/80 text-sm font-medium">
-                                    <span className="text-brand-400 font-bold text-lg">₹{sport.price_per_hour || sport.price}<span className="text-sm font-medium text-slate-300">/hr</span></span>
-                                    <div className="flex items-center gap-1">
-                                      <Star size={14} className="text-amber-400 fill-amber-400" />
-                                      {sport.rating || '4.8'}
-                                    </div>
-                                </div>
+                                <span className="font-sans font-bold text-[10px] uppercase tracking-widest text-foreground/70 mt-1 block">Professional Turf</span>
                             </div>
 
-                            <div className="w-12 h-12 rounded-full bg-white text-slate-900 flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition-colors shadow-lg">
-                               <ArrowRight size={20} />
+                            <div className="flex-1 flex justify-end">
+                               <div className="w-12 h-12 rounded-full border-2 border-foreground overflow-hidden">
+                                  <img 
+                                    src={sport.image || sport.image_url} 
+                                    className="w-full h-full object-cover grayscale mix-blend-multiply" 
+                                    alt={sport.name} 
+                                  />
+                               </div>
                             </div>
                         </div>
                     </Link>
                   </motion.div>
-              ))}
+                )
+              })}
           </div>
       )}
 
-      {/* Seeding Help */}
-      {!loading && sports.length === 0 && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-xl text-red-600 dark:text-red-400 text-xs text-center font-medium">
-              Mock data loaded. Check Supabase connection.
-          </div>
-      )}
+      {/* Sticky Call to Action */}
+      <div className="fixed bottom-24 left-0 w-full px-4 z-40">
+        <Link to="/booking/football">
+          <button className="w-full bg-pl-brand text-white font-display text-2xl tracking-wider uppercase py-4 border-[3px] border-foreground shadow-pl-solid active:translate-y-1 active:shadow-none transition-all">
+            CHOOSE THE ARENA
+          </button>
+        </Link>
+      </div>
+
     </div>
   );
 }

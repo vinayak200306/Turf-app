@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { motion } from 'framer-motion';
-import { Calendar, User as UserIcon, LogOut, Clock, Activity, CreditCard, ChevronRight } from 'lucide-react';
+import { LogOut, Activity } from 'lucide-react';
 import { useUser, useAuth, SignInButton, SignOutButton } from '@clerk/clerk-react';
 
 export default function Dashboard() {
@@ -13,11 +13,9 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchBookings = async () => {
       if (isSignedIn && user) {
-        // Fallback: If not using Supabase RLS with Clerk token yet, just query by clerk id or mock
         const { data, error } = await supabase
           .from('bookings')
           .select('*, sports(*)')
-          // We assume user_id is the clerk user id if we setup custom claims, but for now we might not have bookings.
           .eq('user_id', user.id)
           .order('date', { ascending: false });
         
@@ -31,21 +29,21 @@ export default function Dashboard() {
     }
   }, [isLoaded, isSignedIn, user]);
 
-  if (!isLoaded || loading) return <div className="h-screen flex items-center justify-center font-bold text-brand-500 animate-pulse">Loading Profile...</div>;
+  if (!isLoaded || loading) return <div className="h-screen flex items-center justify-center font-heavy text-4xl text-foreground uppercase animate-pulse">LOADING PROFILE...</div>;
 
   if (!isSignedIn) {
       return (
           <div className="flex flex-col items-center justify-center min-h-[70vh] p-8 text-center space-y-6">
-              <div className="w-24 h-24 rounded-[2rem] glass flex items-center justify-center shadow-xl">
-                  <UserIcon size={40} className="text-brand-500" />
+              <div className="w-24 h-24 border-[3px] border-foreground bg-pl-yellow flex items-center justify-center shadow-pl-solid">
+                  <span className="font-heavy text-5xl">?</span>
               </div>
               <div className="space-y-2">
-                  <h2 className="font-display font-bold text-3xl text-slate-900 dark:text-white">Guest Player</h2>
-                  <p className="text-slate-500 text-sm font-medium">Sign in to track your sessions and book arenas seamlessly.</p>
+                  <h2 className="font-heavy text-4xl uppercase">GUEST PLAYER</h2>
+                  <p className="font-sans font-bold text-xs tracking-widest uppercase text-foreground/60">SIGN IN TO TRACK SESSIONS</p>
               </div>
               <SignInButton mode="modal">
-                <button className="bg-gradient-brand text-white font-bold px-10 py-4 rounded-2xl shadow-lg hover:shadow-brand-500/50 hover:-translate-y-1 transition-all">
-                    Sign In / Register
+                <button className="bg-pl-brand text-white border-[3px] border-foreground font-heavy text-3xl py-4 px-10 shadow-pl-solid hover:-translate-y-1 transition-all">
+                    SIGN IN / REGISTER
                 </button>
               </SignInButton>
           </div>
@@ -53,104 +51,106 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 pb-28 font-sans">
-      <header className="space-y-1 mt-4">
-        <h2 className="font-display font-bold text-3xl text-slate-900 dark:text-white">Dashboard</h2>
+    <div className="flex flex-col gap-6 pb-28 font-sans">
+      <header className="px-4 py-6 border-b-[3px] border-foreground mb-2">
+        <h2 className="font-heavy text-5xl text-foreground uppercase tracking-wide leading-none">PLAYER</h2>
+        <h2 className="font-heavy text-5xl text-foreground uppercase tracking-wide leading-none">DASHBOARD</h2>
       </header>
 
       {/* Profile Card */}
-      <div className="glass-card p-6 relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 text-brand-500 opacity-5 text-8xl font-black rotate-12 select-none">PRO</div>
-          <div className="relative z-10 flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-4">
-                    <img src={user.imageUrl} alt="Profile" className="w-16 h-16 rounded-2xl border-2 border-brand-100 dark:border-brand-900/50 shadow-md object-cover" />
-                    <div>
-                      <h3 className="font-display font-bold text-xl text-slate-900 dark:text-white">{user.fullName || 'Athlete'}</h3>
-                      <p className="text-slate-500 text-xs font-medium">{user.primaryEmailAddress?.emailAddress}</p>
+      <section className="px-4">
+        <div className="bg-pl-yellow border-[3px] border-foreground p-6 relative overflow-hidden shadow-pl-solid">
+            <div className="absolute -right-2 -top-4 text-foreground/10 text-[10rem] font-heavy rotate-12 select-none leading-none">PRO</div>
+            <div className="relative z-10 flex flex-col gap-4">
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 border-[3px] border-foreground overflow-hidden bg-white shadow-pl-solid">
+                        <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover grayscale" />
+                      </div>
+                      <div>
+                        <span className="font-sans font-bold text-[10px] tracking-widest uppercase mb-1 block">WELCOME BACK</span>
+                        <h3 className="font-heavy text-3xl uppercase leading-none">{user.fullName || 'ATHLETE'}</h3>
+                        <p className="font-sans font-bold text-[10px] tracking-widest uppercase mt-1">{user.primaryEmailAddress?.emailAddress}</p>
+                      </div>
                     </div>
-                  </div>
-                  <SignOutButton>
-                    <button className="text-slate-400 hover:text-red-500 transition-colors p-2 glass rounded-full" aria-label="Sign out">
-                        <LogOut size={16} />
-                    </button>
-                  </SignOutButton>
-              </div>
+                    <SignOutButton>
+                      <button className="text-foreground hover:bg-white border-[3px] border-foreground p-2 bg-background shadow-pl-solid transition-colors" aria-label="Sign out">
+                          <LogOut size={20} strokeWidth={3} />
+                      </button>
+                    </SignOutButton>
+                </div>
 
-              <div className="grid grid-cols-3 gap-3 mt-4">
-                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 text-center border border-slate-100 dark:border-slate-800">
-                  <span className="block text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Matches</span>
-                  <span className="font-display font-bold text-2xl text-slate-900 dark:text-white">{bookings.length}</span>
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  <div className="bg-white border-[3px] border-foreground p-3 text-center shadow-[2px_2px_0px_rgba(15,23,42,1)]">
+                    <span className="block font-sans font-bold text-[10px] uppercase tracking-wider mb-1">MATCHES</span>
+                    <span className="font-heavy text-3xl leading-none">{bookings.length}</span>
+                  </div>
+                  <div className="bg-white border-[3px] border-foreground p-3 text-center shadow-[2px_2px_0px_rgba(15,23,42,1)]">
+                    <span className="block font-sans font-bold text-[10px] uppercase tracking-wider mb-1">STATUS</span>
+                    <span className="font-heavy text-2xl text-pl-brand leading-none flex items-center justify-center gap-1 mt-1"><Activity size={16} strokeWidth={4} /> PRO</span>
+                  </div>
+                  <div className="bg-white border-[3px] border-foreground p-3 text-center shadow-[2px_2px_0px_rgba(15,23,42,1)]">
+                    <span className="block font-sans font-bold text-[10px] uppercase tracking-wider mb-1">POINTS</span>
+                    <span className="font-heavy text-3xl leading-none text-pl-green">240</span>
+                  </div>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 text-center border border-slate-100 dark:border-slate-800">
-                  <span className="block text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Status</span>
-                  <span className="font-display font-bold text-xl text-brand-500 flex items-center justify-center gap-1"><Activity size={14} /> PRO</span>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 text-center border border-slate-100 dark:border-slate-800">
-                  <span className="block text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Points</span>
-                  <span className="font-display font-bold text-2xl text-amber-500">240</span>
-                </div>
-              </div>
-          </div>
-      </div>
+            </div>
+        </div>
+      </section>
 
       {/* Bookings List */}
-      <section className="space-y-4">
-          <div className="flex justify-between items-end">
-            <h4 className="font-display font-bold text-xl text-slate-900 dark:text-white">Upcoming Sessions</h4>
-            <span className="text-brand-500 text-xs font-bold uppercase tracking-wider">View All</span>
+      <section className="px-4 space-y-4">
+          <div className="flex justify-between items-end border-b-[3px] border-foreground pb-2">
+            <h4 className="font-heavy text-3xl uppercase leading-none">UPCOMING SESSIONS</h4>
+            <span className="font-sans font-bold text-xs uppercase tracking-widest text-pl-brand border-b-[3px] border-pl-brand">VIEW ALL</span>
           </div>
 
           {bookings.length === 0 ? (
-              <div className="glass rounded-[2rem] p-10 text-center flex flex-col items-center justify-center gap-4">
-                  <Calendar size={48} className="text-slate-300 dark:text-slate-600" />
-                  <p className="text-slate-500 font-medium text-sm">No sessions booked yet.<br/>Time to hit the field!</p>
+              <div className="bg-white border-[3px] border-foreground rounded-[2rem] p-10 text-center flex flex-col items-center justify-center gap-4 shadow-pl-solid">
+                  <div className="font-heavy text-8xl text-foreground/20 leading-none">?</div>
+                  <p className="font-sans font-bold text-sm uppercase tracking-widest">NO SESSIONS YET.<br/>TIME TO HIT THE FIELD!</p>
               </div>
           ) : (
               <div className="flex flex-col gap-4">
-                  {bookings.map((booking, index) => (
+                  {bookings.map((booking, index) => {
+                    const bgColors = ['bg-pl-blue', 'bg-pl-green', 'bg-pl-pink'];
+                    const colorClass = bgColors[index % bgColors.length];
+
+                    return (
                       <motion.div 
                         key={booking.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4"
+                        className={`border-[3px] border-foreground shadow-pl-solid flex flex-col ${colorClass} hover:-translate-y-1 transition-transform`}
                       >
-                          <div className="flex justify-between items-start">
-                              <div className="flex gap-4 items-center">
-                                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100">
-                                    {booking.sports?.image_url && <img src={booking.sports.image_url} alt="sport" className="w-full h-full object-cover" />}
-                                  </div>
-                                  <div className="space-y-1">
-                                      <h5 className="font-display font-bold text-lg text-slate-900 dark:text-white leading-none">{booking.sports?.name || 'Arena Session'}</h5>
-                                      <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
-                                          <Calendar size={12} className="text-brand-500" /> {booking.date}
-                                      </div>
-                                  </div>
-                              </div>
-                              <span className={clsx(
-                                "text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider",
-                                booking.status === 'CONFIRMED' ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-50 text-red-600"
-                              )}>
+                          <div className="flex justify-between items-center p-4 border-b-[3px] border-foreground bg-white">
+                              <span className="font-sans font-bold text-[10px] uppercase tracking-widest">
+                                  {booking.date}
+                              </span>
+                              <span className={`font-heavy text-xl uppercase leading-none px-3 py-1 border-[3px] border-foreground ${booking.status === 'CONFIRMED' ? "bg-pl-green" : "bg-pl-brand text-white"}`}>
                                   {booking.status}
                               </span>
                           </div>
-                          <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800">
-                             <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-                                 <Clock size={16} className="text-amber-500" /> {booking.start_time.slice(0,5)}
-                             </div>
-                             <div className="flex items-center gap-3">
-                                 <div className="text-right">
-                                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Pax</span>
-                                     <span className="font-bold text-slate-900 dark:text-white">{booking.players_count}</span>
-                                 </div>
-                                 <button className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-brand-500 transition-colors">
-                                  <ChevronRight size={16} />
-                                 </button>
-                             </div>
+                          
+                          <div className="flex justify-between items-center p-4">
+                              <div>
+                                <span className="font-sans font-bold text-[10px] tracking-widest uppercase mb-1 block">SPORT</span>
+                                <h5 className="font-heavy text-4xl uppercase leading-none">{booking.sports?.name || 'ARENA'}</h5>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-sans font-bold text-[10px] tracking-widest uppercase mb-1 block">TIME</span>
+                                <span className="font-heavy text-3xl leading-none">{booking.start_time.slice(0,5)}</span>
+                              </div>
+                          </div>
+                          
+                          <div className="flex justify-between items-center p-4 border-t-[3px] border-foreground bg-background">
+                            <span className="font-sans font-bold text-[10px] tracking-widest uppercase">PLAYERS: <span className="font-heavy text-lg">{booking.players_count}</span></span>
+                            <button className="font-sans font-bold text-[10px] tracking-widest uppercase border-b-2 border-foreground hover:text-pl-brand">MANAGE</button>
                           </div>
                       </motion.div>
-                  ))}
+                    )
+                  })}
               </div>
           )}
       </section>

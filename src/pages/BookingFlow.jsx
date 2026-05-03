@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabaseClient';
 import { useRealtimeSlots } from '../hooks/useRealtimeSlots';
-import { ArrowRight, Sunrise, Sun, Sunset, Moon, Calendar as CalendarIcon, Users, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { ArrowRight, Sunrise, Sun, Sunset, Moon, Users, CheckCircle2, ChevronLeft } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function BookingFlow() {
@@ -27,19 +27,19 @@ export default function BookingFlow() {
       const isToday = i === 0;
       return {
         full: d.toISOString().split('T')[0],
-        day: isToday ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' }),
+        day: isToday ? 'TODAY' : d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
         date: d.getDate(),
       };
     });
   }, []);
 
   const getTimeBlock = (time) => {
-    if (!time) return { label: 'Unknown', icon: null, multiplier: 1.0 };
+    if (!time) return { label: 'UNKNOWN', icon: null, multiplier: 1.0 };
     const hour = parseInt(time.split(':')[0]);
-    if (hour >= 6 && hour < 12) return { label: 'Morning', icon: <Sunrise size={16} className="text-amber-500" />, multiplier: 1.0 };
-    if (hour >= 12 && hour < 16) return { label: 'Afternoon', icon: <Sun size={16} className="text-orange-500" />, multiplier: 0.8 };
-    if (hour >= 16 && hour < 20) return { label: 'Evening', icon: <Sunset size={16} className="text-brand-500" />, multiplier: 1.2 };
-    return { label: 'Night', icon: <Moon size={16} className="text-indigo-400" />, multiplier: 1.5 };
+    if (hour >= 6 && hour < 12) return { label: 'MORNING', icon: <Sunrise size={20} strokeWidth={3} />, multiplier: 1.0, color: 'bg-pl-yellow' };
+    if (hour >= 12 && hour < 16) return { label: 'AFTERNOON', icon: <Sun size={20} strokeWidth={3} />, multiplier: 0.8, color: 'bg-pl-blue' };
+    if (hour >= 16 && hour < 20) return { label: 'EVENING', icon: <Sunset size={20} strokeWidth={3} />, multiplier: 1.2, color: 'bg-pl-pink' };
+    return { label: 'NIGHT', icon: <Moon size={20} strokeWidth={3} />, multiplier: 1.5, color: 'bg-pl-green' };
   };
 
   const calculatePrice = (basePrice, time) => {
@@ -48,11 +48,11 @@ export default function BookingFlow() {
   };
 
   const groupedSlots = useMemo(() => {
-    const groups = { Morning: [], Afternoon: [], Evening: [], Night: [] };
+    const groups = { MORNING: [], AFTERNOON: [], EVENING: [], NIGHT: [] };
     slots.forEach(slot => {
       const block = getTimeBlock(slot.start_time);
       if (groups[block.label]) groups[block.label].push(slot);
-      else groups.Night.push(slot);
+      else groups.NIGHT.push(slot);
     });
     return groups;
   }, [slots]);
@@ -64,13 +64,13 @@ export default function BookingFlow() {
       if (data) setSport(data);
       else {
           const mock = [
-              { id: 'football', name: 'Football', price_per_hour: 1200, image_url: '/assets/sports/football.jpg' },
-              { id: 'box_cricket', name: 'Box Cricket', price_per_hour: 1500, image_url: '/assets/sports/box_cricket.jpg' },
-              { id: 'badminton', name: 'Badminton', price_per_hour: 400, image_url: '/assets/sports/badminton.jpg' },
-              { id: 'tennis', name: 'Tennis', price_per_hour: 1000, image_url: '/assets/sports/tennis.jpg' },
-              { id: 'drift_bikes', name: 'Drift Bikes', price_per_hour: 2500, image_url: '/assets/sports/drift_bikes.jpg' },
-              { id: 'bowling', name: 'Bowling', price_per_hour: 1200, image_url: '/assets/sports/bowling.jpg' },
-              { id: 'paintball', name: 'Paintball', price_per_hour: 2500, image_url: '/assets/sports/paintball.jpg' }
+              { id: 'football', name: 'FOOTBALL', price_per_hour: 1200, image_url: '/assets/sports/football.jpg' },
+              { id: 'box_cricket', name: 'BOX CRICKET', price_per_hour: 1500, image_url: '/assets/sports/box_cricket.jpg' },
+              { id: 'badminton', name: 'BADMINTON', price_per_hour: 400, image_url: '/assets/sports/badminton.jpg' },
+              { id: 'tennis', name: 'TENNIS', price_per_hour: 1000, image_url: '/assets/sports/tennis.jpg' },
+              { id: 'drift_bikes', name: 'DRIFT BIKES', price_per_hour: 2500, image_url: '/assets/sports/drift_bikes.jpg' },
+              { id: 'bowling', name: 'BOWLING', price_per_hour: 1200, image_url: '/assets/sports/bowling.jpg' },
+              { id: 'paintball', name: 'PAINTBALL', price_per_hour: 2500, image_url: '/assets/sports/paintball.jpg' }
           ].find(s => s.id === slugId || s.name.toLowerCase() === id.toLowerCase());
           if (mock) setSport(mock);
       }
@@ -81,10 +81,6 @@ export default function BookingFlow() {
   const handleBooking = async () => {
     setBookingStatus('processing');
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        // Clerk handles its own auth, we assume they are logged in if we proceed. 
-        // Real implementation would check useAuth from Clerk.
-    }
 
     const { error } = await supabase.from('bookings').insert([{
       user_id: user?.id || 'mock-user-id',
@@ -101,7 +97,6 @@ export default function BookingFlow() {
       setBookingStatus('error');
     } else {
       setBookingStatus('success');
-      // Fire and forget email confirmation
       import('../utils/email').then(({ sendBookingConfirmation }) => {
         sendBookingConfirmation({
           toEmail: user?.primaryEmailAddress?.emailAddress || 'guest@example.com',
@@ -114,60 +109,61 @@ export default function BookingFlow() {
     }
   };
 
-  if (!sport) return <div className="h-screen flex items-center justify-center text-brand-500 font-bold animate-pulse">Loading Arena Details...</div>;
+  if (!sport) return <div className="h-screen flex items-center justify-center font-heavy text-4xl text-foreground uppercase animate-pulse">LOADING ARENA...</div>;
 
   const currentBasePrice = sport.price_per_hour || sport.price || 1000;
   const finalPrice = selectedSlot ? calculatePrice(currentBasePrice, selectedSlot.start_time) : currentBasePrice;
 
-  const steps = ['Arena', 'Time', 'Squad', 'Checkout'];
+  const steps = ['ARENA', 'TIME', 'SQUAD', 'PAY'];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-28 font-sans">
+    <div className="flex flex-col min-h-screen bg-background pb-28 font-sans">
       {/* Header */}
-      <header className="fixed top-0 left-0 w-full z-50 glass px-4 py-4 flex items-center justify-between">
-        <button onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-          <ChevronLeft size={24} className="text-slate-700 dark:text-slate-300" />
+      <header className="fixed top-0 left-0 w-full z-50 bg-background border-b-[3px] border-foreground px-4 py-4 flex items-center justify-between">
+        <button onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)} className="p-2 border-2 border-foreground rounded-full hover:bg-foreground hover:text-background transition-colors">
+          <ChevronLeft size={24} strokeWidth={3} />
         </button>
-        <div className="flex gap-2">
-          {steps.map((s, i) => (
-            <div key={s} className="flex flex-col items-center gap-1">
-              <div className={clsx("w-12 h-1.5 rounded-full transition-colors duration-500", step > i ? "bg-brand-500" : step === i + 1 ? "bg-brand-300 dark:bg-brand-700" : "bg-slate-200 dark:bg-slate-800")} />
-            </div>
-          ))}
+        <div className="flex flex-col items-center">
+          <span className="font-heavy text-2xl uppercase tracking-widest">{steps[step-1]}</span>
+          <div className="flex gap-1 mt-1">
+            {steps.map((_, i) => (
+              <div key={i} className={clsx("h-2 rounded-full border-2 border-foreground transition-all duration-300", step > i ? "w-6 bg-pl-brand" : "w-2 bg-transparent")} />
+            ))}
+          </div>
         </div>
-        <div className="w-10" /> {/* Spacer */}
+        <div className="w-10" />
       </header>
 
-      <main className="flex-1 mt-20 px-4">
+      <main className="flex-1 mt-24 px-4">
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.section key="step1" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="space-y-6">
-              <div className="relative h-80 rounded-[2rem] overflow-hidden shadow-2xl">
-                <img src={sport.image_url || sport.image} alt={sport.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm">Premium Turf</span>
-                  <h1 className="font-display font-bold text-4xl mt-3">{sport.name}</h1>
-                  <p className="text-white/80 font-medium text-sm mt-1 flex items-center gap-2">Starts from <span className="font-bold text-brand-400">₹{currentBasePrice}/hr</span></p>
+            <motion.section key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+              <div className="relative h-80 rounded-[2rem] overflow-hidden border-[3px] border-foreground shadow-pl-solid">
+                <img src={sport.image_url || sport.image} alt={sport.name} className="w-full h-full object-cover grayscale mix-blend-multiply opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <span className="bg-pl-brand text-white px-3 py-1 font-bold text-[10px] uppercase tracking-widest border-2 border-foreground">PREMIUM TURF</span>
+                  <h1 className="font-heavy text-6xl mt-2 leading-none uppercase">{sport.name}</h1>
+                  <p className="font-sans font-bold text-sm uppercase tracking-widest mt-2">STARTS AT ₹{currentBasePrice}/HR</p>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-glass dark:shadow-glass-dark">
-                <h3 className="font-display font-bold text-xl mb-4 text-slate-900 dark:text-white">Arena Info</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                  Experience top-tier facilities with professional grade surfaces. Perfect for competitive matches or casual play.
+              <div className="bg-pl-yellow rounded-[2rem] p-6 border-[3px] border-foreground shadow-pl-solid">
+                <h3 className="font-heavy text-3xl mb-2 uppercase">ARENA DETAILS</h3>
+                <p className="font-sans font-bold text-sm text-foreground/80 leading-relaxed uppercase tracking-wider">
+                  EXPERIENCE TOP-TIER FACILITIES WITH PROFESSIONAL GRADE SURFACES. PERFECT FOR COMPETITIVE MATCHES OR CASUAL PLAY.
                 </p>
-                <button onClick={() => setStep(2)} className="w-full mt-6 bg-gradient-brand text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-brand-500/50 hover:-translate-y-1 transition-all flex justify-center items-center gap-2">
-                  Check Availability <ArrowRight size={20} />
+                <button onClick={() => setStep(2)} className="w-full mt-6 bg-foreground text-background font-heavy text-2xl tracking-wider py-4 border-[3px] border-foreground hover:bg-white hover:text-foreground transition-colors shadow-[4px_4px_0px_rgba(255,255,255,1)]">
+                  CHECK AVAILABILITY
                 </button>
               </div>
             </motion.section>
           )}
 
           {step === 2 && (
-            <motion.section key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+            <motion.section key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-8">
               <div>
-                <h2 className="font-display font-bold text-3xl text-slate-900 dark:text-white mb-2">Select Date & Time</h2>
-                <p className="text-slate-500 text-sm">Choose your preferred slot</p>
+                <h2 className="font-heavy text-5xl uppercase leading-none">SELECT TIME</h2>
+                <p className="font-sans font-bold text-xs tracking-widest uppercase mt-1 text-foreground/60">CHOOSE YOUR PREFERRED SLOT</p>
               </div>
 
               {/* Horizontal Scroll Date Picker */}
@@ -177,24 +173,30 @@ export default function BookingFlow() {
                     key={d.full}
                     onClick={() => { setSelectedDate(d.full); setSelectedSlot(null); }}
                     className={clsx(
-                      "flex-shrink-0 w-20 h-24 rounded-2xl transition-all duration-300 snap-center flex flex-col items-center justify-center border shadow-sm",
+                      "flex-shrink-0 w-24 h-28 rounded-2xl transition-all duration-200 snap-center flex flex-col items-center justify-center border-[3px] border-foreground",
                       selectedDate === d.full 
-                        ? "bg-brand-500 border-brand-500 text-white scale-105 shadow-brand-500/30" 
-                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brand-300"
+                        ? "bg-pl-brand text-white shadow-pl-solid -translate-y-1" 
+                        : "bg-white text-foreground hover:bg-slate-100"
                     )}
                   >
-                    <span className="text-[11px] font-medium uppercase tracking-wider mb-1 opacity-80">{d.day}</span>
-                    <span className="text-2xl font-display font-bold">{d.date}</span>
+                    <span className="font-sans font-bold text-[10px] tracking-widest">{d.day}</span>
+                    <span className="font-heavy text-5xl mt-1">{d.date}</span>
                   </button>
                 ))}
               </div>
 
-              <div className="space-y-8">
-                {['Morning', 'Afternoon', 'Evening', 'Night'].map((block) => (
-                  groupedSlots[block].length > 0 && (
-                    <div key={block} className="space-y-4">
-                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium text-sm">
-                        {getTimeBlock(groupedSlots[block][0].start_time).icon}
+              <div className="space-y-6 pb-20">
+                {['MORNING', 'AFTERNOON', 'EVENING', 'NIGHT'].map((block) => {
+                  const blockColor = getTimeBlock('06:00').color; // Just fetching a color var
+                  let bgCol = 'bg-white';
+                  if(block === 'MORNING') bgCol = 'bg-pl-yellow';
+                  if(block === 'AFTERNOON') bgCol = 'bg-pl-blue';
+                  if(block === 'EVENING') bgCol = 'bg-pl-pink';
+                  if(block === 'NIGHT') bgCol = 'bg-pl-green';
+
+                  return groupedSlots[block].length > 0 && (
+                    <div key={block} className={clsx("rounded-[2rem] p-5 border-[3px] border-foreground shadow-pl-solid", bgCol)}>
+                      <div className="flex items-center gap-2 font-heavy text-2xl uppercase mb-4">
                         {block}
                       </div>
                       <div className="grid grid-cols-3 gap-3">
@@ -207,104 +209,95 @@ export default function BookingFlow() {
                               disabled={!slot.is_available}
                               onClick={() => setSelectedSlot(slot)}
                               className={clsx(
-                                "py-3 px-2 rounded-xl border text-center transition-all duration-300 flex flex-col items-center justify-center gap-1 relative overflow-hidden",
+                                "py-3 rounded-xl border-[3px] border-foreground text-center transition-all flex flex-col items-center justify-center relative",
                                 !slot.is_available 
-                                  ? "opacity-40 bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed"
+                                  ? "opacity-50 bg-white/50 cursor-not-allowed"
                                   : isActive 
-                                    ? "bg-brand-50 border-brand-500 text-brand-700 dark:bg-brand-900/30 dark:border-brand-500 dark:text-brand-300 shadow-sm"
-                                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-300 dark:text-slate-200"
+                                    ? "bg-foreground text-background shadow-[2px_2px_0px_white]"
+                                    : "bg-white hover:-translate-y-1 hover:shadow-pl-solid"
                               )}
                             >
-                              {isActive && (
-                                <motion.div layoutId="slot-active" className="absolute inset-0 bg-brand-100 dark:bg-brand-900/50 z-0" />
-                              )}
-                              <span className="relative z-10 font-bold">{slot.start_time.slice(0, 5)}</span>
-                              {slot.is_available && <span className={clsx("relative z-10 text-[10px] font-medium", isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-500")}>₹{slotPrice}</span>}
+                              <span className="font-heavy text-2xl leading-none">{slot.start_time.slice(0, 5)}</span>
+                              {slot.is_available && <span className="font-sans font-bold text-[10px] uppercase mt-1 tracking-widest">₹{slotPrice}</span>}
                             </button>
                           );
                         })}
                       </div>
                     </div>
                   )
-                ))}
-                {slotsLoading && <div className="text-center py-10 font-medium text-brand-500 animate-pulse">Loading slots...</div>}
+                })}
+                {slotsLoading && <div className="text-center py-10 font-heavy text-2xl animate-pulse">LOADING SLOTS...</div>}
               </div>
 
               {selectedSlot && (
-                <div className="fixed bottom-24 left-0 w-full px-4 z-40">
-                  <motion.button 
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                <div className="fixed bottom-0 left-0 w-full px-4 py-4 bg-background border-t-[3px] border-foreground z-40 flex gap-4">
+                  <div className="flex-1">
+                    <span className="font-sans font-bold text-[10px] tracking-widest uppercase">TOTAL</span>
+                    <div className="font-heavy text-3xl leading-none">₹{calculatePrice(currentBasePrice, selectedSlot.start_time)}</div>
+                  </div>
+                  <button 
                     onClick={() => setStep(3)} 
-                    className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-2xl shadow-xl flex justify-between items-center px-6"
+                    className="flex-[2] bg-pl-brand text-white border-[3px] border-foreground font-heavy text-2xl py-3 shadow-pl-solid hover:bg-white hover:text-foreground hover:shadow-none transition-all flex justify-center items-center gap-2"
                   >
-                    <span>Continue</span>
-                    <span className="flex items-center gap-2">₹{calculatePrice(currentBasePrice, selectedSlot.start_time)} <ArrowRight size={18}/></span>
-                  </motion.button>
+                    CONTINUE <ArrowRight size={24} strokeWidth={3} />
+                  </button>
                 </div>
               )}
             </motion.section>
           )}
 
           {step === 3 && (
-            <motion.section key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+            <motion.section key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-8">
               <div>
-                <h2 className="font-display font-bold text-3xl text-slate-900 dark:text-white mb-2">Squad Size</h2>
-                <p className="text-slate-500 text-sm">How many players are joining?</p>
+                <h2 className="font-heavy text-5xl uppercase leading-none">SQUAD SIZE</h2>
+                <p className="font-sans font-bold text-xs tracking-widest uppercase mt-1 text-foreground/60">HOW MANY PLAYERS?</p>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 text-center shadow-glass dark:shadow-glass-dark">
-                  <div className="flex justify-center mb-6">
-                    <div className="w-20 h-20 rounded-full bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center">
-                      <Users size={32} className="text-brand-500" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-center gap-8 mb-8">
-                      <button onClick={() => setPlayerCount(Math.max(1, playerCount - 1))} className="w-14 h-14 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-2xl font-light hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">-</button>
-                      <span className="font-display font-bold text-6xl text-slate-900 dark:text-white w-20">{playerCount}</span>
-                      <button onClick={() => setPlayerCount(playerCount + 1)} className="w-14 h-14 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-2xl font-light hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">+</button>
+              <div className="bg-pl-blue rounded-[2rem] p-8 text-center border-[3px] border-foreground shadow-pl-solid">
+                  <div className="flex items-center justify-center gap-8 py-8">
+                      <button onClick={() => setPlayerCount(Math.max(1, playerCount - 1))} className="w-16 h-16 rounded-full border-[3px] border-foreground bg-white flex items-center justify-center font-heavy text-4xl shadow-pl-solid hover:-translate-y-1 transition-all">-</button>
+                      <span className="font-heavy text-8xl w-24 leading-none">{playerCount}</span>
+                      <button onClick={() => setPlayerCount(playerCount + 1)} className="w-16 h-16 rounded-full border-[3px] border-foreground bg-white flex items-center justify-center font-heavy text-4xl shadow-pl-solid hover:-translate-y-1 transition-all">+</button>
                   </div>
               </div>
-              <button onClick={() => setStep(4)} className="w-full bg-gradient-brand text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-brand-500/50 hover:-translate-y-1 transition-all">Proceed to Checkout</button>
+              <button onClick={() => setStep(4)} className="w-full bg-pl-brand text-white border-[3px] border-foreground font-heavy text-3xl py-5 shadow-pl-solid hover:-translate-y-1 transition-all">PROCEED TO PAY</button>
             </motion.section>
           )}
 
           {step === 4 && (
-            <motion.section key="step4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+            <motion.section key="step4" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
               <div>
-                <h2 className="font-display font-bold text-3xl text-slate-900 dark:text-white mb-2">Checkout</h2>
-                <p className="text-slate-500 text-sm">Review your booking details</p>
+                <h2 className="font-heavy text-5xl uppercase leading-none">CHECKOUT</h2>
+                <p className="font-sans font-bold text-xs tracking-widest uppercase mt-1 text-foreground/60">REVIEW DETAILS</p>
               </div>
               
-              <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-glass dark:shadow-glass-dark relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
-                
-                <div className="flex gap-4 items-center mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden">
-                    <img src={sport.image_url || sport.image} alt="Sport" className="w-full h-full object-cover" />
+              <div className="bg-white rounded-[2rem] p-6 border-[3px] border-foreground shadow-pl-solid relative overflow-hidden">
+                <div className="flex gap-4 items-center mb-6 pb-6 border-b-[3px] border-foreground">
+                  <div className="w-20 h-20 border-[3px] border-foreground rounded-xl overflow-hidden">
+                    <img src={sport.image_url || sport.image} alt="Sport" className="w-full h-full object-cover grayscale" />
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-xl text-slate-900 dark:text-white">{sport.name}</h3>
-                    <p className="text-brand-500 font-medium text-sm">{selectedDate} • {selectedSlot?.start_time.slice(0,5)}</p>
+                    <h3 className="font-heavy text-3xl uppercase leading-none mb-1">{sport.name}</h3>
+                    <p className="font-sans font-bold text-xs tracking-widest">{selectedDate} • {selectedSlot?.start_time.slice(0,5)}</p>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Duration</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">60 minutes</span>
+                <div className="space-y-4 mb-6 font-sans font-bold text-sm tracking-widest uppercase">
+                  <div className="flex justify-between">
+                    <span className="text-foreground/60">DURATION</span>
+                    <span>60 MINS</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Players</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">{playerCount} Pax</span>
+                  <div className="flex justify-between">
+                    <span className="text-foreground/60">PLAYERS</span>
+                    <span>{playerCount} PAX</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Slot Base Price</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">₹{currentBasePrice}</span>
+                  <div className="flex justify-between">
+                    <span className="text-foreground/60">BASE PRICE</span>
+                    <span>₹{currentBasePrice}</span>
                   </div>
                   {getTimeBlock(selectedSlot?.start_time).multiplier !== 1 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-amber-500">{getTimeBlock(selectedSlot?.start_time).label} Surcharge</span>
-                      <span className="font-semibold text-amber-500">
+                    <div className="flex justify-between">
+                      <span className="text-pl-brand">{getTimeBlock(selectedSlot?.start_time).label} SURCHARGE</span>
+                      <span className="text-pl-brand">
                         {getTimeBlock(selectedSlot?.start_time).multiplier > 1 ? '+' : '-'} 
                         ₹{Math.abs(finalPrice - currentBasePrice)}
                       </span>
@@ -312,28 +305,28 @@ export default function BookingFlow() {
                   )}
                 </div>
 
-                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">Total Pay</span>
-                  <span className="font-display font-bold text-3xl text-brand-500">₹{finalPrice}</span>
+                <div className="pt-6 border-t-[3px] border-foreground flex justify-between items-center">
+                  <span className="font-heavy text-2xl uppercase">TOTAL PAY</span>
+                  <span className="font-heavy text-4xl text-pl-brand">₹{finalPrice}</span>
                 </div>
               </div>
 
               {bookingStatus === 'success' ? (
-                  <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 p-8 rounded-[2rem] text-center border border-emerald-100 dark:border-emerald-800/50">
-                      <CheckCircle2 size={48} className="mx-auto mb-4 text-emerald-500" />
-                      <h3 className="font-display font-bold text-2xl mb-2">Booking Confirmed!</h3>
-                      <p className="text-sm opacity-80 mb-6">Your slot is locked in. Get ready to play.</p>
-                      <button onClick={() => navigate('/dashboard')} className="bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-emerald-600 transition-colors">
-                        View Dashboard
+                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-pl-green border-[3px] border-foreground p-8 rounded-[2rem] text-center shadow-pl-solid">
+                      <CheckCircle2 size={64} className="mx-auto mb-4 text-foreground" strokeWidth={3} />
+                      <h3 className="font-heavy text-4xl uppercase mb-2">BOOKING CONFIRMED</h3>
+                      <p className="font-sans font-bold text-xs tracking-widest uppercase mb-6 opacity-80">YOUR SLOT IS LOCKED. GET READY TO PLAY.</p>
+                      <button onClick={() => navigate('/dashboard')} className="w-full bg-foreground text-background border-[3px] border-foreground font-heavy text-2xl py-4 shadow-[4px_4px_0px_white]">
+                        VIEW DASHBOARD
                       </button>
                   </motion.div>
               ) : (
                   <button 
                     disabled={bookingStatus === 'processing'} 
                     onClick={handleBooking} 
-                    className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center gap-2 hover:-translate-y-1 transition-transform disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="w-full bg-foreground text-background border-[3px] border-foreground font-heavy text-3xl py-5 shadow-pl-solid hover:bg-white hover:text-foreground transition-all disabled:opacity-70 flex justify-center items-center"
                   >
-                      {bookingStatus === 'processing' ? 'Processing Secure Payment...' : 'Pay with Razorpay'}
+                      {bookingStatus === 'processing' ? 'PROCESSING...' : 'PAY NOW'}
                   </button>
               )}
             </motion.section>
