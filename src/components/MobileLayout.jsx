@@ -21,12 +21,12 @@ export default function MobileLayout({ children }) {
       {/* App Header */}
       <header className="fixed top-0 w-full max-w-[480px] z-50 bg-background border-b-[3px] border-foreground px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center">
-            <Trophy size={20} className="text-background" strokeWidth={3} />
+          <div className="w-10 h-10 rounded-full border-2 border-foreground overflow-hidden bg-white">
+            <img src="/assets/logo.png" alt="Field Door Logo" className="w-full h-full object-cover" />
           </div>
           <div className="flex flex-col leading-none">
             <h1 className="font-heavy text-2xl tracking-wide uppercase mt-1">
-              TURF <span className="text-pl-brand">LEAGUE</span>
+              FIELD <span className="text-pl-brand">DOOR</span>
             </h1>
           </div>
         </div>

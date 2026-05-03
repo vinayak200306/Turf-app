@@ -21,7 +21,7 @@ export default function Home() {
             <p className="font-sans font-bold text-xs uppercase tracking-widest text-foreground/70 mb-1">Current Location</p>
             <div className="flex items-center gap-1 text-foreground font-heavy text-xl uppercase tracking-wide">
               <MapPin size={20} className="text-pl-brand" strokeWidth={3} />
-              Gadag, Karnataka
+              Karnataka Bhavan Arena
             </div>
           </div>
           <div className="w-12 h-12 rounded-full border-2 border-foreground overflow-hidden shadow-pl-solid">
@@ -31,15 +31,15 @@ export default function Home() {
 
         <div className="relative rounded-2xl overflow-hidden border-[3px] border-foreground shadow-pl-solid mb-6">
           <img src="/assets/hero_wallpaper.jpg" className="absolute inset-0 w-full h-full object-cover" alt="Hero" />
-          <div className="absolute inset-0 bg-background/80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative flex flex-col p-6 z-10"
+            className="relative flex flex-col p-6 z-10 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
           >
-            <h2 className="font-heavy text-7xl text-foreground leading-none uppercase tracking-tight">BOOK</h2>
-            <h2 className="font-heavy text-7xl text-pl-brand leading-none uppercase tracking-tight">YOUR</h2>
-            <h2 className="font-heavy text-7xl text-white text-stroke leading-[0.8] uppercase tracking-tight mb-2">GAME</h2>
+            <h2 className="font-heavy text-7xl text-white leading-none uppercase tracking-tight">BOOK</h2>
+            <h2 className="font-heavy text-7xl text-pl-brand leading-none uppercase tracking-tight drop-shadow-md">YOUR</h2>
+            <h2 className="font-heavy text-7xl text-white leading-[0.8] uppercase tracking-tight mb-2">GAME</h2>
           </motion.div>
         </div>
 
