@@ -82,30 +82,95 @@ export default function BookingFlow() {
     setBookingStatus('processing');
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from('bookings').insert([{
-      user_id: user?.id || 'mock-user-id',
-      sport_id: sport.id,
-      date: selectedDate,
-      start_time: selectedSlot.start_time,
-      end_time: selectedSlot.end_time,
-      players_count: playerCount,
-      status: 'CONFIRMED'
-    }]);
+    try {
+      // 1. Lock slot
+      const { data: lockData, error: lockError } = await supabase.rpc('lock_slot', {
+        p_slot_id: selectedSlot.id,
+        p_user_id: user?.id || 'mock-user-id'
+      });
 
-    if (error) {
+      if (lockError || !lockData) {
+        alert("Slot already booked or unavailable!");
+        setBookingStatus('error');
+        return;
+      }
+
+      // 2. Create pending booking
+      const finalPrice = calculatePrice(currentBasePrice, selectedSlot.start_time);
+      await supabase.from('bookings').insert({
+        slot_id: selectedSlot.id,
+        user_id: user?.id || 'mock-user-id',
+        status: 'pending',
+        amount: finalPrice,
+        sport_id: sport.id,
+        date: selectedDate,
+        start_time: selectedSlot.start_time,
+        end_time: selectedSlot.end_time,
+        players_count: playerCount
+      });
+
+      // 3. Create Razorpay order via backend
+      const res = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: finalPrice })
+      });
+      const order = await res.json();
+
+      if (!order.id) throw new Error("Failed to create order");
+
+      // 4. Open Razorpay
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "YOUR_RAZORPAY_KEY",
+        amount: order.amount,
+        currency: "INR",
+        name: "Field Door",
+        description: `${sport.name} Booking`,
+        order_id: order.id,
+        handler: async function (response) {
+          // 5. Verify Signature
+          const verifyRes = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              slot_id: selectedSlot.id,
+              user_id: user?.id || 'mock-user-id'
+            })
+          });
+          const verifyData = await verifyRes.json();
+          
+          if (verifyData.success) {
+            setBookingStatus('success');
+            import('../utils/email').then(({ sendBookingConfirmation }) => {
+              sendBookingConfirmation({
+                toEmail: user?.primaryEmailAddress?.emailAddress || 'guest@example.com',
+                userName: user?.fullName || 'Athlete',
+                sportName: sport.name,
+                date: selectedDate,
+                time: selectedSlot.start_time
+              });
+            });
+          } else {
+            alert("Payment verification failed");
+            setBookingStatus('error');
+          }
+        },
+        theme: { color: "#ff4b4b" }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response){
+        alert("Payment failed");
+        setBookingStatus('idle');
+      });
+      rzp.open();
+
+    } catch (error) {
       console.error(error);
       setBookingStatus('error');
-    } else {
-      setBookingStatus('success');
-      import('../utils/email').then(({ sendBookingConfirmation }) => {
-        sendBookingConfirmation({
-          toEmail: user?.primaryEmailAddress?.emailAddress || 'guest@example.com',
-          userName: user?.fullName || 'Athlete',
-          sportName: sport.name,
-          date: selectedDate,
-          time: selectedSlot.start_time
-        });
-      });
     }
   };
 
