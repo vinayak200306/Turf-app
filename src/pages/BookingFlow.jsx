@@ -139,7 +139,7 @@ export default function BookingFlow() {
           {step === 1 && (
             <motion.section key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
               <div className="relative h-80 rounded-[2rem] overflow-hidden border-[3px] border-foreground shadow-pl-solid">
-                <img src={sport.image_url || sport.image} alt={sport.name} className="w-full h-full object-cover grayscale mix-blend-multiply opacity-80" />
+                <img src={sport.image_url || sport.image} alt={sport.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <span className="bg-pl-brand text-white px-3 py-1 font-bold text-[10px] uppercase tracking-widest border-2 border-foreground">PREMIUM TURF</span>
@@ -273,7 +273,7 @@ export default function BookingFlow() {
               <div className="bg-white rounded-[2rem] p-6 border-[3px] border-foreground shadow-pl-solid relative overflow-hidden">
                 <div className="flex gap-4 items-center mb-6 pb-6 border-b-[3px] border-foreground">
                   <div className="w-20 h-20 border-[3px] border-foreground rounded-xl overflow-hidden">
-                    <img src={sport.image_url || sport.image} alt="Sport" className="w-full h-full object-cover grayscale" />
+                    <img src={sport.image_url || sport.image} alt="Sport" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h3 className="font-heavy text-3xl uppercase leading-none mb-1">{sport.name}</h3>

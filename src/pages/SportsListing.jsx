@@ -78,10 +78,10 @@ export default function SportsListing() {
                             </div>
 
                             <div className="flex-1 flex justify-end">
-                               <div className="w-12 h-12 rounded-full border-2 border-foreground overflow-hidden">
+                               <div className="w-12 h-12 rounded-full border-[3px] border-foreground overflow-hidden bg-white">
                                   <img 
                                     src={sport.image || sport.image_url} 
-                                    className="w-full h-full object-cover grayscale mix-blend-multiply" 
+                                    className="w-full h-full object-cover" 
                                     alt={sport.name} 
                                   />
                                </div>

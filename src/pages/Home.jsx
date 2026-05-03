@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Search } from 'lucide-react';
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const categories = [
     { id: 'football', name: 'FOOTBALL', img: '/assets/sports/football.jpg', color: 'bg-pl-blue' },
     { id: 'box_cricket', name: 'CRICKET', img: '/assets/sports/box_cricket.jpg', color: 'bg-pl-green' },
@@ -27,22 +29,33 @@ export default function Home() {
           </div>
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col"
-        >
-          <h2 className="font-heavy text-7xl text-foreground leading-none uppercase tracking-tight">BOOK</h2>
-          <h2 className="font-heavy text-7xl text-pl-brand leading-none uppercase tracking-tight">YOUR</h2>
-          <h2 className="font-heavy text-7xl text-white text-stroke leading-[0.8] uppercase tracking-tight mb-6">GAME</h2>
-        </motion.div>
+        <div className="relative rounded-2xl overflow-hidden border-[3px] border-foreground shadow-pl-solid mb-6">
+          <img src="/assets/hero_wallpaper.jpg" className="absolute inset-0 w-full h-full object-cover" alt="Hero" />
+          <div className="absolute inset-0 bg-background/80" />
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative flex flex-col p-6 z-10"
+          >
+            <h2 className="font-heavy text-7xl text-foreground leading-none uppercase tracking-tight">BOOK</h2>
+            <h2 className="font-heavy text-7xl text-pl-brand leading-none uppercase tracking-tight">YOUR</h2>
+            <h2 className="font-heavy text-7xl text-white text-stroke leading-[0.8] uppercase tracking-tight mb-2">GAME</h2>
+          </motion.div>
+        </div>
 
         {/* Search Bar */}
-        <div className="flex items-center gap-3 px-4 py-4 bg-white border-[3px] border-foreground shadow-pl-solid rounded-xl">
+        <div className="flex items-center gap-3 px-4 py-4 bg-white border-[3px] border-foreground shadow-pl-solid rounded-xl focus-within:-translate-y-1 focus-within:shadow-[6px_6px_0px_rgba(15,23,42,1)] transition-all">
           <Search size={24} className="text-foreground" strokeWidth={3} />
           <input 
             type="text" 
             placeholder="FIND ARENAS..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchQuery.trim()) {
+                navigate(`/sports?q=${encodeURIComponent(searchQuery)}`);
+              }
+            }}
             className="bg-transparent border-none outline-none w-full font-display text-xl uppercase tracking-wider text-foreground placeholder:text-foreground/40"
           />
         </div>
@@ -66,8 +79,8 @@ export default function Home() {
               key={cat.id} 
             >
               <Link to={`/booking/${cat.id}`} className={`block relative h-32 rounded-2xl overflow-hidden border-[3px] border-foreground shadow-pl-solid ${cat.color} group`}>
-                <div className="absolute right-0 top-0 w-1/2 h-full border-l-[3px] border-foreground">
-                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover grayscale mix-blend-multiply opacity-50 group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute right-0 top-0 w-1/2 h-full border-l-[3px] border-foreground bg-white">
+                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 </div>
                 <div className="absolute inset-0 p-5 flex flex-col justify-center w-1/2">
                     <span className="font-sans font-bold text-[10px] uppercase tracking-widest text-foreground/70 mb-1">Book Now</span>

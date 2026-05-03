@@ -65,7 +65,7 @@ export default function Dashboard() {
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-20 border-[3px] border-foreground overflow-hidden bg-white shadow-pl-solid">
-                        <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover grayscale" />
+                        <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <span className="font-sans font-bold text-[10px] tracking-widest uppercase mb-1 block">WELCOME BACK</span>
