@@ -17,6 +17,10 @@ export default {
           dark: '#0f172a',
           brand: '#ff4b4b'
         },
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        surface: "var(--surface)",
+        "surface-foreground": "var(--surface-foreground)",
         brand: {
           50: '#fff1f2',
           100: '#ffe4e6',
